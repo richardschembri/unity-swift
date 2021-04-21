@@ -1,6 +1,4 @@
 # unity-swift
-<img src="https://img.shields.io/badge/ver-2.0.0-blue.svg"></img>
-> Forked from the seemingly abandoned [miyabi/unity-swift](https://github.com/miyabi/unity-swift)
 
 Native plugin to write native code in [Swift](https://swift.org) for [Unity](http://unity3d.com/).
 
@@ -25,19 +23,19 @@ See [unity-replay-kit-bridge/Example/Assets/UnityReplayKitBridge at swift · miy
 
 ### How to call Unity methods
 
-Unity interface functions are defined in *UnityInterface.h* in Xcode project built by Unity. This header file is imported in *UnitySwift-Bridging-Header.h*, so you can call the functions directly in your Swift codes.  
-
-To call Unity methods, use `UnitySendMessage` function like below:
-
 ```swift
 //  Example.swift
 
 import Foundation
 
-class Example : NSObject {
+public class Example : NSObject {
     static func callUnityMethod(_ message: String) {
+        let uf = UnityFramework.getInstance()
         // Call a method on a specified GameObject.
-        UnitySendMessage("CallbackTarget", "OnCallFromSwift", message)
+        uf?.sendMessageToGO(
+            withName: "CallbackTarget",
+            functionName: "OnCallFromSwift",
+            message: message)
     }
 }
 ```
@@ -51,21 +49,22 @@ class Example : NSObject {
 
 import Foundation
 
-class Example : NSObject {
-    @objc static func swiftMethod(_ message: String) {
+public class Example : NSObject {
+    @objc public static func swiftMethod(_ message: String) {
         print("\(#function) is called with message: \(message)")
     }
 }
 ```
 
-#### Step 2: Include "unityswift-Swift.h" and define C functions to wrap Swift classes in .mm file (Objective-C++).
+#### Step 2: Include UnityFramework/UnityFramework-Swift.h and define C functions to wrap Swift classes in .mm file (Objective-C++).
 
 ```objc
 //  Example.mm
 
 #import <Foundation/Foundation.h>
-#import "unityswift-Swift.h"    // Required
-                                // This header file is generated automatically when Xcode build runs.
+#import <UnityFramework/UnityFramework-Swift.h>    
+// Required
+// This header file is generated automatically when Xcode build runs.
 
 extern "C" {
     void _ex_callSwiftMethod(const char *message) {
@@ -104,13 +103,12 @@ public class Example {
 Example.CallSwiftMethod("Hello, Swift!");
 ```
 
-The file names of *UnitySwift-Bridging-Header.h* and *unityswift-Swift.h* are defined in "Objective-C Bridging Header" entry and "Objective-C Generated Interface Header Name" entry in Build Settings. These settings and other settings about Swift compiler are set automatically by [PostProcesser](./Example/Assets/UnitySwift/Editor/PostProcessor.cs) when the Unity build runs.
-
 ## Requirements
 
 iOS 9 or later
 
 ## Compatibility
 
-Unity 2019.2.0f1
-Xcode 10.3
+Unity 2019.4.1f1
+
+Xcode 11.5
